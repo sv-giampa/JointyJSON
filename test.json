@@ -1,0 +1,13 @@
+{
+	"name" : "first object\b",
+	"array" : ["hello", "json\"", 0.371, "string which contains a quote(\")", {"name":"object in the array"}],
+	"object2":{
+		"name":"second object",
+		"number":31.48,
+		"object3" : {
+			"letter \"a\"": "\u0002",
+			"array":["another","array"]
+		}
+	},
+	"x": 25.34 
+}

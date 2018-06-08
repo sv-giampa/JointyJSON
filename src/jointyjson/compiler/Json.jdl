@@ -1,0 +1,83 @@
+
+/**
+ *  Copyright 2017 Salvatore Giampà
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *  
+ **/
+
+/**
+ *	JSON language description adhere to standard JSON specifics at
+ *
+ *		http://www.json.org/
+ *
+ **/
+ 
+language: json;
+
+lexicon:{
+	braceOpen = /\s*\{\s*/$, "json object";
+	braceClosed = /\s*\}\s*/$, "}";
+	brackOpen = /\s*\[\s*/$, "json array";
+	brackClosed = /\s*\]\s*/$, "]";
+	comma = /\s*\,\s*/$, ",";
+	colon = /\s*\:\s*/$, ":";
+	
+	quote = /\"/$, "quote";
+	
+	// string components
+	unicode = /[^\"\\]/$, "unicode character";
+	
+	ctrlQuote = /\\\"/$, "quotation mark (\ followed by a quote)";
+	ctrlBackSlash = /\\\\/$, "backslash mark (\\)";
+	ctrlSlash = /\\//$, "slash mark (\/)";
+	ctrlBackSpace = /\\b/$, "backspace mark (\b)";
+	ctrlFormFeed = /\\f/$, "formfeed mark (\f)";
+	ctrlNewLine = /\\n/$, "new line mark (\n)";
+	ctrlCarriageRetun = /\\r/$, "carraige return mark (\r)";
+	ctrlHorizontalTab = /\\t/$, "horizontal tab mark (\t)";
+	ctrlHex = /\\u[0-9a-fA-F]{4,4}/$, "\u followed by 4 hexadecimal characters";
+	
+	boolean = /(true|false)/$, "null";
+	null = /null/$, "null";
+	number = /([0-9]+\.[0-9]*|[0-9]*\.[0-9]+|[0-9]+)([eE][\+\-]?[0-9]+)?/$, "number";
+	
+	!comment = /(?s)(/\\*.*?\\*/|//[^\\n]*)/$;
+	nonSkippable = /[^\s]/$;
+}
+
+grammar:{
+	root = object | array;
+	
+	array = $brackOpen value arrayTail;
+	arrayTail = $comma value arrayTail | $brackClosed;
+
+	object = $braceOpen propertyList $braceClosed;
+	propertyList = property propertyListTail;
+	propertyListTail = $comma property propertyListTail | #;
+
+	property = name $colon value;
+	name = string;
+
+	value = $null | string | $number | $boolean | object | array;
+
+	string = $quote chars $quote;
+	chars = char chars | #;
+	char = $unicode | $ctrlQuote | $ctrlBackSlash | $ctrlSlash | 
+			$ctrlBackSpace | $ctrlFormFeed | $ctrlNewLine | 
+			$ctrlCarriageRetun | $ctrlHorizontalTab | $ctrlHex;
+			
+}
+
+
+
