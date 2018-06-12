@@ -168,7 +168,7 @@ public class JsonObject implements JsonElement {
 		StringBuilder sb = new StringBuilder();
 		sb.append("{\n");
 		for(Entry<JsonString,JsonElement> entry : elements.entrySet()) {
-			sb.append("\"" + entry.getKey() + "\\h : " + entry.getValue() + ",\n");
+			sb.append("\"" + entry.getKey() + "\" : " + entry.getValue() + ",\n");
 		}
 		sb.append("}");
 		return sb.toString();
@@ -179,7 +179,7 @@ public class JsonObject implements JsonElement {
 		StringBuilder sb = new StringBuilder();
 		sb.append("{\n");
 		for(Entry<JsonString,JsonElement> entry : elements.entrySet()) {
-			sb.append("\"" + entry.getKey().toEncodedString() + "\\h : " + entry.getValue().toEncodedString() + ",\n");
+			sb.append("\"" + entry.getKey().toEncodedString() + "\" : " + entry.getValue().toEncodedString() + ",\n");
 		}
 		sb.append("}");
 		return sb.toString();
