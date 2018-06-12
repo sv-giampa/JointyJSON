@@ -76,8 +76,4 @@ grammar:{
 	char = $unicode | $ctrlQuote | $ctrlBackSlash | $ctrlSlash | 
 			$ctrlBackSpace | $ctrlFormFeed | $ctrlNewLine | 
 			$ctrlCarriageRetun | $ctrlHorizontalTab | $ctrlHex;
-			
 }
-
-
-
