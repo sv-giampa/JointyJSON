@@ -5,9 +5,12 @@
 		"name":"second object",
 		"number":31.48,
 		"object3" : {
-			"letter \"a\"": "\u0002",
+			"letter \"a\"": "from hex: \u0061",
 			"array":["another","array"]
 		}
 	},
-	"x": 25.34 
+	"x": 25.34,
+	"test null": null,
+	"test true" : true,
+	"test false" : false
 }

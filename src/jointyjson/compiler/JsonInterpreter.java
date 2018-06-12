@@ -22,6 +22,9 @@ import java.util.List;
 
 import jointyc.analysis.parser.SyntaxTree;
 import jointyc.analysis.semantic.Interpreter;
+import jointyc.analysis.semantic.annotation.NoBufferClear;
+import jointyc.analysis.semantic.annotation.NonTerminalToken;
+import jointyc.analysis.semantic.annotation.TerminalToken;
 import jointyc.analysis.semantic.exception.SemanticException;
 import jointyjson.model.JsonArray;
 import jointyjson.model.JsonBoolean;
@@ -36,99 +39,109 @@ import jointyjson.model.JsonString;
  * @author Salvatore Giampa'
  *
  */
-class JsonInterpreter implements Interpreter {
-	
-	@Override
-	public Object terminal(SyntaxTree tree) throws SemanticException {
-		switch(tree.type()) {
-		case "json.number":
-			return new JsonNumber(Double.valueOf(tree.token()));
-		case "json.unicode":
-			return tree.token();
-		case "json.ctrlQuote":
-			return "\"";
-		case "json.ctrlBackSlash":
-			return "\\";
-		case "json.ctrlSlash":
-			return "/";
-		case "json.ctrlBackSpace":
-			return "\b";
-		case "json.ctrlFormFeed":
-			return "\f";
-		case "json.ctrlNewLine":
-			return "\n";
-		case "json.ctrlCarriageRetun":
-			return "\r";
-		case "json.ctrlHorizontalTab":
-			return "\t";
-		case "json.ctrlHex":
-			String hexCode = tree.token().substring(2);
-			char hexChar = (char)(int)Integer.valueOf(hexCode, 16);
-			return "" + hexChar;
-		case "json.null":
-			return JsonNull.getInstance();
-		case "json.boolean":
-			boolean bool = Boolean.parseBoolean(tree.token());
-			return JsonBoolean.getInstance(bool);
-		}
-		return null;
-	}
+public class JsonInterpreter implements Interpreter {
 
-	@Override
-	public void nonTerminal(SyntaxTree tree, List<Object> resultsBuffer) throws SemanticException {
-		if(tree.query("json.object")) {
-			//the results buffer will contain a list of <name, value> couples
+	@TerminalToken(type="json.number")
+	public JsonNumber number(SyntaxTree tree) {
+		return new JsonNumber(Double.valueOf(tree.token()));
+	}
+	
+	@TerminalToken(type="json.unicode")
+	public String unicode(SyntaxTree tree) {
+		return tree.token();
+	}
+	
+	@TerminalToken(type="json.ctrlQuote")
+	public String ctrlQuote() {
+		return "\"";
+	}
+	
+	@TerminalToken(type="json.ctrlBackSlash")
+	public String ctrlBackSlash() {
+		return "\\";
+	}
+	
+	@TerminalToken(type="json.ctrlSlash")
+	public String ctrlSlash() {
+		return "/";
+	}
+	
+	@TerminalToken(type="json.ctrlBackSpace")
+	public String ctrlBackSpace() {
+		return "\b";
+	}
+	
+	@TerminalToken(type="json.ctrlFormFeed")
+	public String ctrlFormFeed() {
+		return "\f";
+	}
+	
+	@TerminalToken(type="json.ctrlNewLine")
+	public String ctrlNewLine() {
+		return "\n";
+	}
+	
+	@TerminalToken(type="json.ctrlCarriageRetun")
+	public String ctrlCarriageRetun() {
+		return "\r";
+	}
+	
+	@TerminalToken(type="json.ctrlHorizontalTab")
+	public String ctrlHorizontalTab() {
+		return "\t";
+	}
+	
+	@TerminalToken(type="json.ctrlHex")
+	public String ctrlHex(SyntaxTree tree) {
+		String hexCode = tree.token().substring(2);
+		char hexChar = (char)(int)Integer.valueOf(hexCode, 16);
+		return "" + hexChar;
+	}
+	
+	@TerminalToken(type="json.null")
+	public JsonNull jsonNull() {
+		return JsonNull.getInstance();
+	}
+	
+	@TerminalToken(type="json.boolean")
+	public JsonBoolean jsonBoolean(SyntaxTree tree) {
+		boolean bool = Boolean.parseBoolean(tree.token());
+		return JsonBoolean.getInstance(bool);
+	}
+	
+	@NonTerminalToken(ruleHead="json.object")
+	public JsonObject jsonObject(JsonElement... keyValues) {
+		JsonObject obj = new JsonObject();
+		for(int i=0; i<keyValues.length; i+=2) {
+			//<name 
+			JsonString name = (JsonString) keyValues[i];
 			
-			JsonObject obj = new JsonObject();
-			while(resultsBuffer.size() > 0) {
-				//<name 
-				JsonString name = (JsonString) resultsBuffer.remove(0);
-				
-				//, value>
-				JsonElement value = (JsonElement) resultsBuffer.remove(0);
-				
-				//add the <name, value> to the new json object
-				obj.put(name.toString(), value);
-			}
+			//, value>
+			JsonElement value = (JsonElement) keyValues[i+1];
 			
-			//returns the built object
-			resultsBuffer.add(obj);
+			//add the <name, value> to the new json object
+			obj.put(name.toString(), value);
 		}
-		else if(tree.query("json.array")) {
-			// the results buffer will contain a list of <value>
-			JsonArray array = new JsonArray();
-			while(resultsBuffer.size() > 0) {
-				//<value>
-				JsonElement value = (JsonElement) resultsBuffer.remove(0);
-				
-				//add the <value> to the array
-				array.add(value);
-			}
-			
-			//returns the built array
-			resultsBuffer.add(array);
+		return obj;
+	}
+	
+	@NonTerminalToken(ruleHead="json.array")
+	public JsonArray jsonArray(JsonElement... elements) {
+		JsonArray array = new JsonArray();
+		for(JsonElement e : elements) {
+			//add the value to the array
+			array.add(e);
 		}
-		else if(tree.query("json.string")) {
-			// the results buffer will contain a list of strings to be concatenated
-			StringBuilder sb = new StringBuilder();
-			
-			for(Object o : resultsBuffer)
-				sb.append((String)o);
-			
-			resultsBuffer.clear();
-			resultsBuffer.add(JsonString.get(sb.toString()));
-		}
+		return array;
+	}
+	
+	@NonTerminalToken(ruleHead="json.string")
+	public JsonString jsonString(String... chars) {
+		// the results buffer will contain a list of strings to be concatenated
+		StringBuilder sb = new StringBuilder();
 		
-		/*
-		 * the following can be omitted
-		 * 
-		 * else if(tree.query("json.arrayTail"){
-		 * 		//forward results to the upper node semantics (do nothing)
-		 * }
-		 * else if(...){
-		 * 		//forward results to the upper node semantics (do nothing)
-		 * }
-		 * etc. etc. etc.
-		*/
+		for(String c : chars)
+			sb.append(c);
+		return JsonString.get(sb.toString());
 	}
 }
