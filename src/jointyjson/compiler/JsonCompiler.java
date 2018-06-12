@@ -71,6 +71,7 @@ public class JsonCompiler {
 		return null;
 	}
 	
+	/*
 	public static void main(String[] args) throws IOException {
 		String jsonSource = new String(Files.readAllBytes(new File("test.json").toPath()));
 		JsonCompiler jsonc = new JsonCompiler();
@@ -85,4 +86,5 @@ public class JsonCompiler {
 		System.out.println("\nRe-encoded JSON:\n");
 		System.out.println(encoder.getJsonString());
 	}
+	*/
 }
