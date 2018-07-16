@@ -59,12 +59,21 @@ public class JsonCompiler {
 	 * Compile an encoded JSON string and builds the JSON composite structure
 	 * @param source an encoded JSON string
 	 * @return the root JSON element of the structure
+	 * @throws UnexpectedSymbolException if the source string contains some syntactic error.
 	 */
-	public JsonElement compile(String source) {
+	public JsonElement compile(String source) throws UnexpectedSymbolException {
 		try {
 			return (JsonElement) compiler.compile(source);
-		} catch (UnexpectedSymbolException e) {
+		} catch (SemanticException e) {
 			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public JsonElement compile(File file) throws UnexpectedSymbolException, IOException {
+		String source = new String(Files.readAllBytes(file.toPath()));
+		try {
+			return (JsonElement) compiler.compile(source);
 		} catch (SemanticException e) {
 			e.printStackTrace();
 		}
@@ -72,7 +81,7 @@ public class JsonCompiler {
 	}
 	
 	
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, UnexpectedSymbolException {
 		String jsonSource = new String(Files.readAllBytes(new File("test.json").toPath()));
 		JsonCompiler jsonc = new JsonCompiler();
 		JsonElement json = jsonc.compile(jsonSource);
