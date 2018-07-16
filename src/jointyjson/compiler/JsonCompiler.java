@@ -70,6 +70,13 @@ public class JsonCompiler {
 		return null;
 	}
 	
+	/**
+	 * Compile a JSON file and builds the JSON composite structure
+	 * @param file the file containing the encoded JSON string
+	 * @return the root JSON element of the structure
+	 * @throws UnexpectedSymbolException if the source string contains some syntactic error.
+	 * @throws IOException if an I/O error occurs reading form the file
+	 */
 	public JsonElement compile(File file) throws UnexpectedSymbolException, IOException {
 		String source = new String(Files.readAllBytes(file.toPath()));
 		try {
